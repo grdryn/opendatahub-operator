@@ -146,6 +146,25 @@ _Appears in:_
 | `devFlags` _[DevFlags](#devflags)_ | Add developer fields |  |  |
 
 
+#### DSCKserve
+
+
+
+DSCKserve contains all the configuration exposed in DSC instance for Kserve component
+
+
+
+_Appears in:_
+- [Components](#components)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `managementState` _[ManagementState](#managementstate)_ | Set to one of the following values:<br /><br />- "Managed" : the operator is actively managing the component and trying to keep it active.<br />              It will only upgrade the component if it is safe to do so<br /><br />- "Removed" : the operator is actively managing the component and will not install it,<br />              or if it is installed, the operator will try to remove it |  | Enum: [Managed Removed] <br /> |
+| `devFlags` _[DevFlags](#devflags)_ | Add developer fields |  |  |
+| `serving` _[ServingSpec](#servingspec)_ | Serving configures the KNative-Serving stack used for model serving. A Service<br />Mesh (Istio) is prerequisite, since it is used as networking layer. |  |  |
+| `defaultDeploymentMode` _[DefaultDeploymentMode](#defaultdeploymentmode)_ | Configures the default deployment mode for Kserve. This can be set to 'Serverless' or 'RawDeployment'.<br />The value specified in this field will be used to set the default deployment mode in the 'inferenceservice-config' configmap for Kserve.<br />This field is optional. If no default deployment mode is specified, Kserve will use Serverless mode. |  | Enum: [Serverless RawDeployment] <br />Pattern: `^(Serverless\|RawDeployment)$` <br /> |
+
+
 #### DSCKueue
 
 
@@ -436,6 +455,26 @@ _Appears in:_
 | `observedGeneration` _integer_ |  |  |  |
 
 
+#### DefaultDeploymentMode
+
+_Underlying type:_ _string_
+
+
+
+_Validation:_
+- Pattern: `^(Serverless|RawDeployment)$`
+
+_Appears in:_
+- [DSCKserve](#dsckserve)
+- [KserveCommonSpec](#kservecommonspec)
+- [KserveSpec](#kservespec)
+
+| Field | Description |
+| --- | --- |
+| `Serverless` | Serverless will be used as the default deployment mode for Kserve. This requires Serverless and ServiceMesh operators configured as dependencies.<br /> |
+| `RawDeployment` | RawDeployment will be used as the default deployment mode for Kserve.<br /> |
+
+
 #### Kserve
 
 
@@ -456,6 +495,25 @@ _Appears in:_
 | `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.25/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  |  |
 | `spec` _[KserveSpec](#kservespec)_ |  |  |  |
 | `status` _[KserveStatus](#kservestatus)_ |  |  |  |
+
+
+#### KserveCommonSpec
+
+
+
+KserveCommonSpec spec defines the shared desired state of Kserve
+
+
+
+_Appears in:_
+- [DSCKserve](#dsckserve)
+- [KserveSpec](#kservespec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `devFlags` _[DevFlags](#devflags)_ | Add developer fields |  |  |
+| `serving` _[ServingSpec](#servingspec)_ | Serving configures the KNative-Serving stack used for model serving. A Service<br />Mesh (Istio) is prerequisite, since it is used as networking layer. |  |  |
+| `defaultDeploymentMode` _[DefaultDeploymentMode](#defaultdeploymentmode)_ | Configures the default deployment mode for Kserve. This can be set to 'Serverless' or 'RawDeployment'.<br />The value specified in this field will be used to set the default deployment mode in the 'inferenceservice-config' configmap for Kserve.<br />This field is optional. If no default deployment mode is specified, Kserve will use Serverless mode. |  | Enum: [Serverless RawDeployment] <br />Pattern: `^(Serverless\|RawDeployment)$` <br /> |
 
 
 #### KserveList
@@ -491,7 +549,9 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `foo` _string_ | Foo is an example field of Kserve. Edit kserve_types.go to remove/update |  |  |
+| `devFlags` _[DevFlags](#devflags)_ | Add developer fields |  |  |
+| `serving` _[ServingSpec](#servingspec)_ | Serving configures the KNative-Serving stack used for model serving. A Service<br />Mesh (Istio) is prerequisite, since it is used as networking layer. |  |  |
+| `defaultDeploymentMode` _[DefaultDeploymentMode](#defaultdeploymentmode)_ | Configures the default deployment mode for Kserve. This can be set to 'Serverless' or 'RawDeployment'.<br />The value specified in this field will be used to set the default deployment mode in the 'inferenceservice-config' configmap for Kserve.<br />This field is optional. If no default deployment mode is specified, Kserve will use Serverless mode. |  | Enum: [Serverless RawDeployment] <br />Pattern: `^(Serverless\|RawDeployment)$` <br /> |
 
 
 #### KserveStatus
@@ -1172,7 +1232,6 @@ Component struct defines the basis for each OpenDataHub component configuration.
 
 _Appears in:_
 - [CodeFlare](#codeflare)
-- [Kserve](#kserve)
 - [ModelMeshServing](#modelmeshserving)
 - [Workbenches](#workbenches)
 
@@ -1215,6 +1274,7 @@ _Appears in:_
 - [Component](#component)
 - [DSCDashboard](#dscdashboard)
 - [DSCDataSciencePipelines](#dscdatasciencepipelines)
+- [DSCKserve](#dsckserve)
 - [DSCKueue](#dsckueue)
 - [DSCModelRegistry](#dscmodelregistry)
 - [DSCRay](#dscray)
@@ -1224,6 +1284,8 @@ _Appears in:_
 - [DashboardSpec](#dashboardspec)
 - [DataSciencePipelinesCommonSpec](#datasciencepipelinescommonspec)
 - [DataSciencePipelinesSpec](#datasciencepipelinesspec)
+- [KserveCommonSpec](#kservecommonspec)
+- [KserveSpec](#kservespec)
 - [KueueCommonSpec](#kueuecommonspec)
 - [KueueSpec](#kueuespec)
 - [ModelRegistryCommonSpec](#modelregistrycommonspec)
@@ -1252,6 +1314,7 @@ _Appears in:_
 - [Component](#component)
 - [DSCDashboard](#dscdashboard)
 - [DSCDataSciencePipelines](#dscdatasciencepipelines)
+- [DSCKserve](#dsckserve)
 - [DSCKueue](#dsckueue)
 - [DSCModelRegistry](#dscmodelregistry)
 - [DSCRay](#dscray)
@@ -1295,45 +1358,6 @@ _Appears in:_
 
 
 
-
-
-
-## datasciencecluster.opendatahub.io/kserve
-
-Package kserve provides utility functions to config Kserve as the Controller for serving ML models on arbitrary frameworks
-
-
-
-#### DefaultDeploymentMode
-
-_Underlying type:_ _string_
-
-
-
-_Validation:_
-- Pattern: `^(Serverless|RawDeployment)$`
-
-_Appears in:_
-- [Kserve](#kserve)
-
-
-
-#### Kserve
-
-
-
-Kserve struct holds the configuration for the Kserve component.
-
-
-
-_Appears in:_
-- [Components](#components)
-
-| Field | Description | Default | Validation |
-| --- | --- | --- | --- |
-| `Component` _[Component](#component)_ |  |  |  |
-| `serving` _[ServingSpec](#servingspec)_ | Serving configures the KNative-Serving stack used for model serving. A Service<br />Mesh (Istio) is prerequisite, since it is used as networking layer. |  |  |
-| `defaultDeploymentMode` _[DefaultDeploymentMode](#defaultdeploymentmode)_ | Configures the default deployment mode for Kserve. This can be set to 'Serverless' or 'RawDeployment'.<br />The value specified in this field will be used to set the default deployment mode in the 'inferenceservice-config' configmap for Kserve.<br />This field is optional. If no default deployment mode is specified, Kserve will use Serverless mode. |  | Enum: [Serverless RawDeployment] <br />Pattern: `^(Serverless\|RawDeployment)$` <br /> |
 
 
 
@@ -1438,7 +1462,7 @@ _Appears in:_
 | `workbenches` _[Workbenches](#workbenches)_ | Workbenches component configuration. |  |  |
 | `modelmeshserving` _[ModelMeshServing](#modelmeshserving)_ | ModelMeshServing component configuration.<br />Does not support enabled Kserve at the same time |  |  |
 | `datasciencepipelines` _[DSCDataSciencePipelines](#dscdatasciencepipelines)_ | DataServicePipeline component configuration.<br />Require OpenShift Pipelines Operator to be installed before enable component |  |  |
-| `kserve` _[Kserve](#kserve)_ | Kserve component configuration.<br />Require OpenShift Serverless and OpenShift Service Mesh Operators to be installed before enable component<br />Does not support enabled ModelMeshServing at the same time |  |  |
+| `kserve` _[DSCKserve](#dsckserve)_ | Kserve component configuration.<br />Require OpenShift Serverless and OpenShift Service Mesh Operators to be installed before enable component<br />Does not support enabled ModelMeshServing at the same time |  |  |
 | `kueue` _[DSCKueue](#dsckueue)_ | Kueue component configuration. |  |  |
 | `codeflare` _[CodeFlare](#codeflare)_ | CodeFlare component configuration.<br />If CodeFlare Operator has been installed in the cluster, it should be uninstalled first before enabled component. |  |  |
 | `ray` _[DSCRay](#dscray)_ | Ray component configuration. |  |  |
@@ -1585,7 +1609,9 @@ bindings with the Service Mesh.
 
 
 _Appears in:_
-- [Kserve](#kserve)
+- [DSCKserve](#dsckserve)
+- [KserveCommonSpec](#kservecommonspec)
+- [KserveSpec](#kservespec)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
