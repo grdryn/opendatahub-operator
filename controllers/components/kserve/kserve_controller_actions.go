@@ -6,12 +6,16 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/go-logr/logr"
+	"github.com/google/go-cmp/cmp"
 	operatorv1 "github.com/openshift/api/operator/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/event"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
+	"sigs.k8s.io/controller-runtime/pkg/predicate"
 
 	componentsv1 "github.com/opendatahub-io/opendatahub-operator/v2/apis/components/v1"
 	"github.com/opendatahub-io/opendatahub-operator/v2/controllers/status"
@@ -23,6 +27,24 @@ import (
 	"github.com/opendatahub-io/opendatahub-operator/v2/pkg/feature"
 	"github.com/opendatahub-io/opendatahub-operator/v2/pkg/metadata/labels"
 )
+
+func debugPredicates(o string, logger logr.Logger) predicate.Predicate {
+	return predicate.Funcs{
+		UpdateFunc: func(e event.UpdateEvent) bool {
+			logger.Info("IN UPDATEFUNC", "kind", e.ObjectNew.GetObjectKind().GroupVersionKind().Kind, "name", e.ObjectNew.GetName(), "for", o, "namespace", e.ObjectNew.GetNamespace())
+			logger.Info(cmp.Diff(e.ObjectOld, e.ObjectNew))
+			return true
+		},
+		CreateFunc: func(e event.CreateEvent) bool {
+			logger.Info("IN CREATEFUNC", "kind", e.Object.GetObjectKind().GroupVersionKind().Kind, "name", e.Object.GetName(), "for", o, "namespace", e.Object.GetNamespace())
+			return true
+		},
+		DeleteFunc: func(e event.DeleteEvent) bool {
+			logger.Info("IN DELETEFUNC", "kind", e.Object.GetObjectKind().GroupVersionKind().Kind, "name", e.Object.GetName(), "for", o, "namespace", e.Object.GetNamespace())
+			return true
+		},
+	}
+}
 
 func checkPreConditions(ctx context.Context, rr *odhtypes.ReconciliationRequest) error {
 	k, ok := rr.Instance.(*componentsv1.Kserve)

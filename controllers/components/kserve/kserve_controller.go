@@ -62,7 +62,7 @@ func (s *componentHandler) NewComponentReconciler(ctx context.Context, mgr ctrl.
 		// changes. The compareHashPredicate ensures that we don't needlessly enqueue
 		// requests if there are no changes that we don't care about.
 		Owns(&templatev1.Template{}, reconciler.WithPredicates(hash.Updated())).
-		Owns(&featuresv1.FeatureTracker{}).
+		Owns(&featuresv1.FeatureTracker{}, reconciler.WithPredicates(debugPredicates("FEATURETRACKER", mgr.GetLogger()), reconciler.DefaultPredicate)).
 		Owns(&networkingv1.NetworkPolicy{}).
 		Owns(&monitoringv1.ServiceMonitor{}).
 		Owns(&admissionregistrationv1.MutatingWebhookConfiguration{}).
