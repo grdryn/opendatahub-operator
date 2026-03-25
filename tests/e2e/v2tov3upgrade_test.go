@@ -68,6 +68,7 @@ func v2Tov3UpgradeTestSuite(t *testing.T) {
 		{"codeflare resources preserved after support removal", v2Tov3UpgradeTestCtx.ValidateCodeFlareResourcePreservation},
 		{"modelmeshserving resources preserved after support removal", v2Tov3UpgradeTestCtx.ValidateModelMeshServingResourcePreservation},
 		{"ray raise error if codeflare component present in the cluster", v2Tov3UpgradeTestCtx.ValidateRayRaiseErrorIfCodeFlarePresent},
+		{"modelcontroller raise error if modelmeshserving component present in the cluster", v2Tov3UpgradeTestCtx.ValidateModelControllerRaiseErrorIfModelMeshServingPresent},
 		{"servicemesh resources preserved after support removal", v2Tov3UpgradeTestCtx.ValidateServiceMeshResourcePreservation},
 	}
 
@@ -189,6 +190,56 @@ func (tc *V2Tov3UpgradeTestCtx) ValidateRayRaiseErrorIfCodeFlarePresent(t *testi
 
 	// Cleanup
 	tc.updateComponentStateInDataScienceCluster(t, gvk.Ray.Kind, operatorv1.Removed)
+}
+
+func (tc *V2Tov3UpgradeTestCtx) ValidateModelControllerRaiseErrorIfModelMeshServingPresent(t *testing.T) {
+	t.Helper()
+
+	dsc := tc.FetchDataScienceCluster()
+	existingComponent := tc.operatorManagedComponent(gvk.ModelMeshServing, defaultModelMeshServingComponentName, dsc)
+
+	tc.EventuallyResourceCreatedOrUpdated(
+		WithObjectToCreate(existingComponent),
+		WithCustomErrorMsg("Failed to create existing %s component", gvk.ModelMeshServing),
+	)
+
+	tc.updateComponentStateInDataScienceCluster(t, gvk.ModelController.Kind, operatorv1.Managed)
+
+	tc.EnsureResourceExists(
+		WithMinimalObject(gvk.DataScienceCluster, tc.DataScienceClusterNamespacedName),
+		WithCondition(And(
+			jq.Match(
+				`.status.conditions[]
+				| select(.type == "ComponentsReady" and .status == "False")
+				| .message == "%s"`,
+				"Some components are not ready: modelcontroller",
+			),
+			jq.Match(
+				`.status.conditions[]
+				| select(.type == "ModelControllerReady" and .status == "False")
+				| .message == "%s"`,
+				status.ModelMeshServingPresentMessage,
+			),
+		)),
+	)
+
+	tc.DeleteResource(
+		WithMinimalObject(gvk.ModelMeshServing, types.NamespacedName{Name: defaultModelMeshServingComponentName}),
+		WithWaitForDeletion(true),
+	)
+
+	tc.EnsureResourceExists(
+		WithMinimalObject(gvk.DataScienceCluster, tc.DataScienceClusterNamespacedName),
+		WithCondition(And(
+			jq.Match(
+				`.status.conditions[]
+				| select(.type == "ModelControllerReady") | .status == "True"`,
+			),
+		)),
+	)
+
+	// Cleanup
+	tc.updateComponentStateInDataScienceCluster(t, gvk.ModelController.Kind, operatorv1.Removed)
 }
 
 func (tc *V2Tov3UpgradeTestCtx) triggerDSCReconciliation(t *testing.T) {
