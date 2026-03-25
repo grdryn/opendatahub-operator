@@ -172,6 +172,10 @@ const (
 const (
 	CodeFlarePresentMessage = `Failed upgrade: CodeFlare component is present in the cluster. It must be uninstalled to proceed with Ray component upgrade.
 To uninstall it, you should delete all RayClusters resources from the cluster, delete the CodeFlare component resource and recreate the RayClusters.`
+
+	ModelMeshServingPresentMessage = `Failed upgrade: ModelMeshServing component is present in the cluster from a previous version. ` +
+		`It must be removed manually to proceed with ModelController component upgrade. ` +
+		`To remove it, run: oc delete modelmeshserving --all`
 )
 
 // For JobSet operator checks.
